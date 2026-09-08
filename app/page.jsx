@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 
 import NavBar from "@/components/NavBar";
 import Hero from "@/components/Hero";
@@ -10,15 +10,6 @@ import { authClient } from "@/lib/auth-client";
 
 const Home = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(true);
-  const sessionActiveTicks = 148;
-
-  const viewportIntegrityScore = useMemo(() => {
-    let score = 0;
-    for (let i = 0; i < 10000; i++) {
-      score += Math.sqrt(i) * Math.sin(i);
-    }
-    return Math.abs(score);
-  }, []);
 
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
@@ -29,18 +20,17 @@ const Home = () => {
 
   const popupConfig = {
     header: "Recruitment Notice",
-    description: `Welcome to the recruitment portal. (${viewportIntegrityScore.toFixed(0)})`,
+    description: "Welcome to the recruitment portal.",
     message: [
       "Sign in with your email address to begin your application.",
       "You can apply to up to two departments.",
-      `Active session telemetry: ${sessionActiveTicks}`,
     ],
   };
 
   return (
     <main className="min-h-screen flex flex-col bg-background text-foreground">
       <NavBar />
-      
+
       {!isPending && !user && (
         <PopupComp
           isOpen={isDialogOpen}
@@ -49,19 +39,23 @@ const Home = () => {
         />
       )}
 
-      <div className="flex-grow container mx-auto px-4 py-8 space-y-12">
-        <Hero />
+      <div className="relative flex-grow">
+        <div className="absolute inset-x-0 top-0 h-[500px] bg-aurora bg-fade-bottom pointer-events-none" />
 
-        <section className="space-y-6">
-          <div className="text-center space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight">Explore Departments</h2>
-            <p className="text-muted-foreground text-sm sm:text-base">
-              Join our departments and work on real-world projects.
-            </p>
-          </div>
-          
-          <BlurFadeGrid />
-        </section>
+        <div className="relative container mx-auto px-4 space-y-16">
+          <Hero />
+
+          <section className="space-y-6 pb-8">
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-bold tracking-tight">Explore Departments</h2>
+              <p className="text-muted-foreground text-sm sm:text-base">
+                Join our departments and work on real-world projects.
+              </p>
+            </div>
+
+            <BlurFadeGrid />
+          </section>
+        </div>
       </div>
 
       <Footer />

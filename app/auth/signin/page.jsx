@@ -33,11 +33,12 @@ export default function SignInPage() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
 
-  const [mode, setMode] = useState("signin"); // "signin" | "signup"
+  const [mode, setMode] = useState("signin");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [socialLoading, setSocialLoading] = useState(false);
 
   useEffect(() => {
     if (session?.user && !isPending) {
@@ -58,6 +59,21 @@ export default function SignInPage() {
       </div>
     );
   }
+
+  // FIXED: Using authClient to send a proper POST request to your new API route
+  const handleGoogleSignIn = async () => {
+    setSocialLoading(true);
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      });
+    } catch (err) {
+      console.error("Google auth error:", err);
+      toast.error("Google authentication failed.");
+      setSocialLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -82,6 +98,7 @@ export default function SignInPage() {
         });
         if (res?.error) {
           toast.error(res.error.message || "Failed to create account.");
+          setSubmitting(false);
         } else {
           toast.success("Account created successfully!");
           router.push("/");
@@ -94,6 +111,7 @@ export default function SignInPage() {
         });
         if (res?.error) {
           toast.error(res.error.message || "Invalid credentials.");
+          setSubmitting(false);
         } else {
           toast.success("Signed in successfully!");
           router.push("/");
@@ -102,84 +120,121 @@ export default function SignInPage() {
     } catch (err) {
       console.error("Auth error:", err);
       toast.error("Authentication failed. Please check your credentials.");
-    } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <main style={{ padding: "20px", maxWidth: "400px", margin: "40px auto" }}>
-      <h1>Recruitment 2026</h1>
-      <p>Candidate Portal</p>
+    <main className={`${bricolageGrotesque.variable} ${spaceGrotesk.variable} font-sans min-h-screen bg-background text-foreground flex items-center justify-center p-4`}>
+      <Card className="w-full max-w-md border-border/50 bg-card/80 backdrop-blur-xl shadow-2xl">
+        <CardHeader className="space-y-1 text-center">
+          <CardTitle className="text-2xl font-bold tracking-tight">Recruitment 2026</CardTitle>
+          <CardDescription className="text-muted-foreground">
+            Candidate Portal — {mode === "signin" ? "Sign in to your account" : "Create a new account"}
+          </CardDescription>
+        </CardHeader>
 
-      <div>
-        <button
-          type="button"
-          onClick={() => setMode("signin")}
-          disabled={mode === "signin"}
-        >
-          Sign In
-        </button>
-        {" | "}
-        <button
-          type="button"
-          onClick={() => setMode("signup")}
-          disabled={mode === "signup"}
-        >
-          Create Account
-        </button>
-      </div>
-
-      <hr />
-
-      <h2>{mode === "signin" ? "Sign In" : "Create Account"}</h2>
-
-      <form onSubmit={handleSubmit}>
-        {mode === "signup" && (
-          <div style={{ marginBottom: "12px" }}>
-            <label htmlFor="name">Full Name: </label>
-            <br />
-            <input
-              id="name"
-              type="text"
-              placeholder="Jane Doe"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
+        <CardContent className="space-y-4">
+          <div className="flex rounded-lg bg-muted p-1 text-sm font-medium">
+            <button
+              type="button"
+              onClick={() => setMode("signin")}
+              className={`flex-1 rounded-md py-2 transition-all ${
+                mode === "signin" ? "bg-background text-foreground shadow" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("signup")}
+              className={`flex-1 rounded-md py-2 transition-all ${
+                mode === "signup" ? "bg-background text-foreground shadow" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Create Account
+            </button>
           </div>
-        )}
 
-        <div style={{ marginBottom: "12px" }}>
-          <label htmlFor="email">Email Address: </label>
-          <br />
-          <input
-            id="email"
-            type="email"
-            placeholder="name@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
+          <Button
+            variant="outline"
+            type="button"
+            disabled={socialLoading || submitting}
+            onClick={handleGoogleSignIn}
+            className="w-full flex items-center justify-center gap-3 py-5 border-border hover:bg-accent/50 cursor-pointer"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path
+                fill="#4285F4"
+                d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.19v3.15C3.17 21.3 7.25 24 12 24z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.19C.43 8.1 0 9.99 0 12s.43 3.9 1.19 5.42l4.09-3.15z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.25 0 3.17 2.7 1.19 6.58l4.09 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+              />
+            </svg>
+            {socialLoading ? "Connecting..." : "Continue with Google"}
+          </Button>
 
-        <div style={{ marginBottom: "12px" }}>
-          <label htmlFor="password">Password: </label>
-          <br />
-          <input
-            id="password"
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
+          <div className="relative flex py-2 items-center">
+            <div className="flex-grow border-t border-border"></div>
+            <span className="flex-shrink mx-4 text-xs uppercase text-muted-foreground">Or continue with email</span>
+            <div className="flex-grow border-t border-border"></div>
+          </div>
 
-        <button type="submit" disabled={submitting}>
-          {submitting ? "Processing..." : mode === "signin" ? "Sign In" : "Create Account"}
-        </button>
-      </form>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {mode === "signup" && (
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Jane Doe"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <Button type="submit" disabled={submitting || socialLoading} className="w-full py-5 font-semibold">
+              {submitting ? "Processing..." : mode === "signin" ? "Sign In" : "Create Account"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </main>
   );
 }

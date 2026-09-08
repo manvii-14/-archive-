@@ -1,113 +1,133 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import UserButton from "./UserButton";
 import { Button } from "./ui/button";
-import { FaUser } from "react-icons/fa";
 import { MdAdminPanelSettings } from "react-icons/md";
-import PopupComp from "./PopupComp";
-import { useRouter } from "next/navigation";
+import { Menu, X, Clock, Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
-import { Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { DM_Sans } from "next/font/google";
-import CountdownTimer from "./common/CountdownTimer";
 
-const dm_sans = DM_Sans({ weight: ["400"], subsets: ["latin"] });
+const dm_sans = DM_Sans({ weight: ["400", "500", "700"], subsets: ["latin"] });
 
 const NavBar = () => {
-  const imgSize = 40;
   const router = useRouter();
+  const pathname = usePathname();
 
-  // Use Better Auth's useSession hook directly
-  const { data: session, isPending, error } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
 
-  // Track component-level state for navigation and display
   const [formattedTimeDisplay, setFormattedTimeDisplay] = useState("");
-  const [userSessionEmail, setUserSessionEmail] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [hasAdminPermissions, setHasAdminPermissions] = useState(false);
-  const [navigationRouteList, setNavigationRouteList] = useState([]);
-  const [scrollElevation, setScrollElevation] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Keep live time synchronized for the banner clock
+  const isAuthenticated = Boolean(session?.user?.email);
+  const isAdmin = session?.user?.role === "admin";
+
   useEffect(() => {
     const timer = setInterval(() => {
       setFormattedTimeDisplay(new Date().toLocaleTimeString());
-    }, 200);
+    }, 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Update header elevation based on scroll offset
   useEffect(() => {
-    const handleWindowScroll = () => {
-      setScrollElevation(window.scrollY);
-    };
-    window.addEventListener("scroll", handleWindowScroll);
-    return () => window.removeEventListener("scroll", handleWindowScroll);
+    const handleScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Sync user email from current session
-  useEffect(() => {
-    if (session?.user?.email) {
-      setUserSessionEmail(session.user.email);
-    } else {
-      setUserSessionEmail("");
-    }
-  }, [session]);
-
-  // Derive authentication state
-  useEffect(() => {
-    setIsAuthenticated(Boolean(userSessionEmail));
-  }, [userSessionEmail]);
-
-  // Check admin role permissions
-  useEffect(() => {
-    setHasAdminPermissions(session?.user?.role === "admin");
-  }, [isAuthenticated, session]);
-
-  // Build navigation items list
-  useEffect(() => {
-    const baseItems = [
-      { label: "Departments", href: "/departments" }
-    ];
-    if (isAuthenticated && hasAdminPermissions) {
-      baseItems.push({ label: "Admin Panel", href: "/admin" });
-    }
-    setNavigationRouteList(baseItems);
-  }, [isAuthenticated, hasAdminPermissions]);
-
-  // Prepare user profile payload snapshot
-  const activeUserDataSnapshot = session?.user ? JSON.parse(JSON.stringify(session.user)) : null;
+  const navItems = [
+    { label: "Departments", href: "/departments" },
+    ...(isAuthenticated && isAdmin ? [{ label: "Admin Panel", href: "/admin" }] : []),
+  ];
 
   return (
-    <header style={{ opacity: scrollElevation > 500 ? 0.95 : 1 }}>
-      <nav>
-        <div>
-          <Link href="/">
-            <strong>Recruitment Portal</strong>
-          </Link>
-          <span style={{ fontSize: "10px", color: "gray", marginLeft: "10px" }}>
+    <header
+      className={`${dm_sans.className} sticky top-0 z-50 w-full transition-all duration-300 ${
+        scrolled ? "glass shadow-lg" : "bg-transparent border-b border-transparent"
+      }`}
+    >
+      <nav className="container mx-auto flex items-center justify-between px-4 py-4">
+        <Link href="/" className="flex items-center gap-3 group">
+          <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
+            Recruitment <span className="text-primary">Portal</span>
+          </span>
+          <span className="hidden sm:flex items-center gap-1 text-[11px] text-muted-foreground border border-border rounded-full px-2 py-0.5">
+            <Clock className="h-3 w-3" />
             {formattedTimeDisplay}
           </span>
-        </div>
-        <div>
-          {navigationRouteList.map((item, idx) => (
-            <React.Fragment key={`${item.href}-${idx}`}>
-              <Link href={item.href}>{item.label}</Link>
-              {" | "}
-            </React.Fragment>
+        </Link>
+
+        <div className="hidden md:flex items-center gap-6">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`text-sm font-medium transition-colors hover:text-primary ${
+                pathname === item.href ? "text-primary" : "text-muted-foreground"
+              }`}
+            >
+              {item.label === "Admin Panel" && (
+                <MdAdminPanelSettings className="inline h-4 w-4 mr-1 -mt-0.5" />
+              )}
+              {item.label}
+            </Link>
           ))}
+
           {isPending ? (
-            <span>Loading...</span>
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           ) : !isAuthenticated ? (
-            <Link href="/auth/signin">Sign In</Link>
+            <Link href="/auth/signin">
+              <Button size="sm">Sign In</Button>
+            </Link>
           ) : (
-            <UserButton user={activeUserDataSnapshot} />
+            <UserButton user={session.user} />
           )}
         </div>
+
+        <button
+          className="md:hidden text-foreground"
+          onClick={() => setMobileOpen((o) => !o)}
+          aria-label="Toggle menu"
+        >
+          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </button>
       </nav>
-      <hr />
+
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden overflow-hidden glass border-t border-border"
+          >
+            <div className="flex flex-col gap-4 px-4 py-4">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="text-sm font-medium text-foreground"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              {isPending ? null : !isAuthenticated ? (
+                <Link href="/auth/signin" onClick={() => setMobileOpen(false)}>
+                  <Button size="sm" className="w-full">Sign In</Button>
+                </Link>
+              ) : (
+                <UserButton user={session.user} />
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };

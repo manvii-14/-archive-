@@ -8,24 +8,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { PiArrowRightThin } from "react-icons/pi";
 
 const PopupComp = ({ isOpen, onClose, PopupData }) => {
-  if (!isOpen) return null;
-
   return (
-    <div style={{ border: "1px solid black", padding: "16px", margin: "16px 0" }}>
-      <h2>{PopupData?.header}</h2>
-      <p>{PopupData?.description}</p>
-      <ul>
-        {PopupData?.message.map((message, index) => (
-          <li key={index}>{message}</li>
-        ))}
-      </ul>
-      <button type="button" onClick={onClose}>
-        Got it
-      </button>
-    </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{PopupData?.header}</DialogTitle>
+          <DialogDescription>{PopupData?.description}</DialogDescription>
+        </DialogHeader>
+
+        <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
+          {PopupData?.message?.map((message, index) => (
+            <li key={index}>{message}</li>
+          ))}
+        </ul>
+
+        <Button type="button" onClick={onClose} className="mt-2 w-full">
+          Got it
+        </Button>
+      </DialogContent>
+    </Dialog>
   );
 };
 

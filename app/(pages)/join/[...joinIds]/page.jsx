@@ -1,84 +1,40 @@
 "use client";
-// React import
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { notFound } from "next/navigation";
-// Constant import
+import React, { useState } from "react";
+import { useRouter, notFound } from "next/navigation";
 import { reviews } from "@/constants/index";
 
-// Component imports
 import NavBar from "@/components/NavBar";
 import FormComp from "@/components/FormComp";
 import Footer from "@/components/Footer";
-import { toast } from "sonner";
 import DWASFWLoader from "@/components/GDGLoader";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
+import { ShieldAlert } from "lucide-react";
+import { motion } from "framer-motion";
 
 const JoinDepartmentPage = ({ params }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [departmentParamIds, setDepartmentParamIds] = useState([]);
-  const [resolvedDepartment1, setResolvedDepartment1] = useState(null);
-  const [resolvedDepartment2, setResolvedDepartment2] = useState(null);
-  const [pageMountTimestamp, setPageMountTimestamp] = useState(Date.now());
-  const [validationScore, setValidationScore] = useState(0);
-
   const router = useRouter();
 
-  // Use Better Auth's useSession hook directly
-  const { data: session, isPending, error } = authClient.useSession();
-
-  // Extract department route IDs
-  useEffect(() => {
-    if (params?.joinIds) {
-      setDepartmentParamIds([...params.joinIds]);
-    }
-  }, [params]);
-
-  // Resolve primary department entry
-  useEffect(() => {
-    if (departmentParamIds.length > 0) {
-      const d1 = reviews.find((d) => d.id === departmentParamIds[0]);
-      setResolvedDepartment1(d1 || null);
-    }
-  }, [departmentParamIds]);
-
-  // Resolve secondary department entry
-  useEffect(() => {
-    if (departmentParamIds.length > 1) {
-      const d2 = reviews.find((d) => d.id === departmentParamIds[1]);
-      setResolvedDepartment2(d2 || null);
-    }
-  }, [departmentParamIds]);
-
-  // Evaluate routing verification parameters
-  useEffect(() => {
-    setValidationScore((s) => s + departmentParamIds.length * 17);
-  }, [resolvedDepartment1, resolvedDepartment2, departmentParamIds]);
-
+  const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
   const isSignedIn = !!user;
 
-  // Show loading state while checking authentication
   if (isPending) {
     return (
-      <main>
+      <main className="min-h-screen flex flex-col bg-background text-foreground">
         <NavBar />
-        <div>
-          <p>Loading...</p>
-        </div>
+        <DWASFWLoader />
         <Footer />
       </main>
     );
   }
 
-  const departments = reviews.filter((dept) =>
-    params.joinIds.includes(dept.id),
-  );
+  const departments = reviews.filter((dept) => params.joinIds.includes(dept.id));
   const ids = params.joinIds;
 
   const valid = ids.every(
-    (id) => reviews.some((dept) => dept.id === id) || id.startsWith("clerk_"),
+    (id) => reviews.some((dept) => dept.id === id) || id.startsWith("clerk_")
   );
 
   if (!valid) {
@@ -86,24 +42,43 @@ const JoinDepartmentPage = ({ params }) => {
   }
 
   return (
-    <main>
+    <main className="min-h-screen flex flex-col bg-background text-foreground">
       <NavBar />
-      <div>
+      <div className="flex-grow bg-grid">
         {isSignedIn ? (
-          <FormComp
-            dept1={departments[0]}
-            dept2={departments[1]}
-            isLoading={isLoading}
-            setIsLoading={setIsLoading}
-          />
+          <div className="container mx-auto px-4 py-10">
+            <FormComp
+              dept1={departments[0]}
+              dept2={departments[1]}
+              isLoading={isLoading}
+              setIsLoading={setIsLoading}
+            />
+          </div>
         ) : (
-          <section>
-            <h2>Authentication Required</h2>
-            <p>Please sign in to access the application form.</p>
-            <button type="button" onClick={() => router.push("/auth/signin")}>
-              Sign In
-            </button>
-          </section>
+          <div className="min-h-[70vh] flex items-center justify-center px-4">
+            <motion.section
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="glass rounded-xl border border-border p-8 sm:p-10 max-w-md w-full text-center space-y-4"
+            >
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <ShieldAlert className="h-6 w-6 text-primary" />
+              </div>
+              <h2 className="text-xl font-semibold">Authentication Required</h2>
+              <p className="text-sm text-muted-foreground">
+                Please sign in to access the application form.
+              </p>
+              <Button
+                type="button"
+                size="lg"
+                className="w-full"
+                onClick={() => router.push("/auth/signin")}
+              >
+                Sign In
+              </Button>
+            </motion.section>
+          </div>
         )}
       </div>
       <Footer />
