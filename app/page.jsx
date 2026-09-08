@@ -40,7 +40,7 @@ const Home = () => {
       )}
 
       <div className="relative flex-grow">
-        <div className="absolute inset-x-0 top-0 h-[500px] bg-aurora bg-fade-bottom pointer-events-none" />
+        <div className="!absolute inset-x-0 top-0 h-[500px] bg-aurora bg-fade-bottom pointer-events-none" />
 
         <div className="relative container mx-auto px-4 space-y-16">
           <Hero />

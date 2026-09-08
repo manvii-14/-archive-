@@ -6,6 +6,7 @@ import UserButton from "./UserButton";
 import { Button } from "./ui/button";
 import { MdAdminPanelSettings } from "react-icons/md";
 import { Menu, X, Clock, Loader2 } from "lucide-react";
+import ThemeToggle from "./ThemeToggle";
 import { authClient } from "@/lib/auth-client";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -86,6 +87,7 @@ const NavBar = () => {
           ) : (
             <UserButton user={session.user} />
           )}
+          <ThemeToggle />
         </div>
 
         <button
@@ -107,6 +109,7 @@ const NavBar = () => {
             className="md:hidden overflow-hidden glass border-t border-border"
           >
             <div className="flex flex-col gap-4 px-4 py-4">
+              <ThemeToggle />
               {navItems.map((item) => (
                 <Link
                   key={item.href}

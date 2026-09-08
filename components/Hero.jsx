@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react"; // Imported Sparkles for a temporary logo
 import { motion } from "framer-motion";
 import { Space_Grotesk } from "next/font/google";
 
@@ -23,27 +23,25 @@ export default function Hero() {
       variants={container}
       initial="hidden"
       animate="show"
-      className="relative flex flex-col items-center text-center gap-6 pt-12 sm:pt-16 pb-20 sm:pb-28"
+      className="relative flex flex-col items-center text-center gap-4 pt-3 sm:pt-5 pb-8"
     >
       <motion.div variants={item}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/assets/gdg.svg"
-          alt="Organization logo"
-          className="h-14 w-auto object-contain"
-        />
+        {/* FIXED: Replaced the broken gdg.svg image with a sleek glowing icon until you upload your real logo */}
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 shadow-[0_0_15px_-3px_hsl(var(--primary))]">
+          <Sparkles className="h-7 w-7 text-primary" />
+        </div>
       </motion.div>
 
       <motion.span
         variants={item}
-        className="inline-flex items-center rounded-full border border-border bg-muted/50 px-4 py-1 text-xs sm:text-sm font-medium text-muted-foreground"
+        className="inline-flex items-center rounded-full border border-border bg-muted/50 px-4 py-1 text-xs sm:text-sm font-medium text-muted-foreground shadow-sm"
       >
         Applications now open
       </motion.span>
 
       <motion.h1
         variants={item}
-        className={`${spaceGrotesk.className} text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-gradient`}
+        className={`${spaceGrotesk.className} text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-[hsl(var(--hero-heading))]`}
       >
         Recruitment 2026
       </motion.h1>
@@ -60,7 +58,7 @@ export default function Hero() {
         <Link href="/departments">
           <button
             type="button"
-            className="group inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-sm sm:text-base font-semibold text-primary-foreground transition-all duration-200 hover:bg-primary/90 active:scale-[0.97] shadow-[0_0_30px_-8px_hsl(var(--primary))]"
+            className="group inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm sm:text-base font-semibold text-primary-foreground transition-all duration-300 hover:scale-105 hover:bg-primary/90 active:scale-[0.97] shadow-[0_0_30px_-8px_hsl(var(--primary))]"
           >
             Join us
             <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />

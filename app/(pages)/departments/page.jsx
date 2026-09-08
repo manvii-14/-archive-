@@ -114,12 +114,12 @@ const DepartmentsListPage = () => {
                   transition={{ duration: 0.35, delay: index * 0.04 }}
                   whileHover={!isSubmitted ? { y: -4 } : {}}
                   whileTap={!isSubmitted ? { scale: 0.98 } : {}}
-                  className={`group relative text-left rounded-xl border p-5 transition-all duration-200 overflow-hidden
+                    className={`glass-card group relative text-left rounded-2xl p-5 transition-all duration-300 overflow-hidden
                     ${isSubmitted ? "opacity-50 cursor-not-allowed border-border bg-card/40" : "cursor-pointer"}
                     ${
                       isSelected
-                        ? "border-primary bg-primary/5 shadow-[0_0_0_1px_hsl(var(--primary))]"
-                        : "border-border bg-card hover:border-muted-foreground/40"
+                        ? "border-primary/70 shadow-[0_0_0_1px_hsl(var(--primary)),0_20px_45px_hsl(var(--primary)/0.16)]"
+                        : "hover:-translate-y-1 hover:border-primary/40"
                     }`}
                 >
                   <div
