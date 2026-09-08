@@ -62,9 +62,14 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
+    cursor: url("/assets/cursor-black.svg") 6 6, auto;
     background-image: radial-gradient(circle at 15% 0%, hsl(var(--primary) / 0.08), transparent 30%),
       radial-gradient(circle at 85% 100%, hsl(var(--primary) / 0.06), transparent 32%);
     background-attachment: fixed;
+  }
+
+  .dark body {
+    cursor: url("/assets/cursor-white.svg") 6 6, auto;
   }
 }
 
@@ -141,6 +146,10 @@
 
   .department-logo {
     filter: brightness(0) saturate(100%) invert(21%) sepia(48%) saturate(3653%) hue-rotate(341deg) brightness(87%) contrast(93%);
+  }
+
+  .dark .department-logo {
+    filter: brightness(0) saturate(100%) invert(82%) sepia(96%) saturate(1168%) hue-rotate(2deg) brightness(104%) contrast(103%);
   }
 
   .bg-aurora {
